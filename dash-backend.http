@@ -1,0 +1,6 @@
+@dash_backend_HostAddress = http://localhost:5294
+
+GET {{dash_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
