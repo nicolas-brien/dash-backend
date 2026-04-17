@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 using DashBackend.Data;
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
 );
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDashRepository, DashRepository>();
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
@@ -45,7 +47,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
-            )
+            ),
+
+            NameClaimType = ClaimTypes.NameIdentifier
         };
     });
 

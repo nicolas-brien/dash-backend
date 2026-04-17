@@ -11,6 +11,7 @@ namespace DashBackend.Data
 
         public DbSet<Network> Networks { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Dash> Dashes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,14 @@ namespace DashBackend.Data
                 eb.HasKey(u => u.Id);
                 eb.Property(u => u.Username).IsRequired().HasMaxLength(100);
             });
+
+            modelBuilder.Entity<Dash>(eb =>
+            {
+                eb.HasKey(d => d.Id);
+                eb.Property(d => d.Name).IsRequired().HasMaxLength(200);
+                eb.Property(d => d.UserId).IsRequired();
+            });
+
         }
     }
 }
