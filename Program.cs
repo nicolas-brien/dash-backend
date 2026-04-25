@@ -17,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDashRepository, DashRepository>();
+builder.Services.AddScoped<IBlockRepository, BlockRepository>();
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>

@@ -15,10 +15,12 @@ namespace DashBackend.Controllers
         private readonly ILogger<DashesController> _logger;
 
         private readonly IDashRepository _dashRepository;
+        private readonly IBlockRepository _blockRepository;
 
-        public DashesController(IDashRepository dashRepository, ILogger<DashesController> logger)
+        public DashesController(IDashRepository dashRepository, IBlockRepository blockRepository, ILogger<DashesController> logger)
         {
             _dashRepository = dashRepository ?? throw new ArgumentNullException(nameof(dashRepository));
+            _blockRepository = blockRepository ?? throw new ArgumentNullException(nameof(blockRepository));
             _logger = logger;
         }
 
@@ -39,7 +41,11 @@ namespace DashBackend.Controllers
         {
             var dash = _dashRepository.GetById(id);
             if (dash != null)
-                return Ok(dash);
+            {
+                var blocks = _blockRepository.GetBlocks(dash.Id);
+
+                return Ok(new { dash, blocks = blocks.Select(b => new { i = b.Id.ToString(), b.Text, b.x, b.y, b.w, b.h }) });
+            }
 
             return NotFound();
         }
@@ -91,6 +97,25 @@ namespace DashBackend.Controllers
 
             _dashRepository.Update(updated);
             _dashRepository.SaveChanges();
+
+            if (req.Blocks != null && req.Blocks.Any()) {
+                foreach (var blockReq in req.Blocks)
+                {
+                    var block = new Block
+                    {
+                        Id = blockReq.i,
+                        DashId = existing.Id,
+                        Text = blockReq.Text,
+                        x = blockReq.x,
+                        y = blockReq.y,
+                        w = blockReq.w,
+                        h = blockReq.h
+                    };
+
+                    _blockRepository.Upsert(block);
+                }
+                _blockRepository.SaveChanges();
+            }
             return NoContent();
         }
 
@@ -99,11 +124,22 @@ namespace DashBackend.Controllers
         [HttpDelete("{id:guid}")]
         public IActionResult Delete(Guid id)
         {
+
             if ((_dashRepository.GetById(id) is Dash existing) == false)
                 return NotFound();
 
             _dashRepository.Delete(existing);
             _dashRepository.SaveChanges();
+
+            var blocks = _blockRepository.GetBlocks(id);
+            if (blocks.Any()) {
+                foreach (var block in blocks)
+                {
+                    _blockRepository.Delete(block);
+                }
+                _blockRepository.SaveChanges();
+            }
+
             return NoContent();
         }
 
@@ -115,6 +151,18 @@ namespace DashBackend.Controllers
         public class UpdateDashRequest
         {
             public string? Name { get; set; }
+
+            public IEnumerable<BlockUpdateRequest>? Blocks { get; set; }
+        }
+
+        public class BlockUpdateRequest
+        {
+            public Guid i { get; set; }
+            public string Text { get; set; } = string.Empty;
+            public int x { get; set; }
+            public int y { get; set; }
+            public int w { get; set; }
+            public int h { get; set; }
         }
     }
 }
