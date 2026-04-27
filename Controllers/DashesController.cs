@@ -44,7 +44,10 @@ namespace DashBackend.Controllers
             {
                 var blocks = _blockRepository.GetBlocks(dash.Id);
 
-                return Ok(new { dash, blocks = blocks.Select(b => new { i = b.Id.ToString(), b.Text, b.x, b.y, b.w, b.h }) });
+                return Ok(new {
+                    dash = new { id = dash.Id, name = dash.Name, settings = new { columns = dash.Columns, rowHeight = dash.RowHeight, displayGrid = dash.DisplayGrid } },
+                    blocks = blocks.Select(b => new { i = b.Id.ToString(), b.Text, b.x, y = b.y, w = b.w, h = b.h })
+                });
             }
 
             return NotFound();
@@ -91,6 +94,9 @@ namespace DashBackend.Controllers
                 Id = existing.Id,
                 Name = string.IsNullOrWhiteSpace(req.Name) ? existing.Name : req.Name.Trim(),
                 UserId = Guid.Parse(userId),
+                Columns = req.Settings?.Columns ?? existing.Columns,
+                RowHeight = req.Settings?.RowHeight ?? existing.RowHeight,
+                DisplayGrid = req.Settings?.DisplayGrid ?? existing.DisplayGrid,
                 CreatedAt = existing.CreatedAt,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -98,7 +104,8 @@ namespace DashBackend.Controllers
             _dashRepository.Update(updated);
             _dashRepository.SaveChanges();
 
-            if (req.Blocks != null && req.Blocks.Any()) {
+            if (req.Blocks != null && req.Blocks.Any())
+            {
                 foreach (var blockReq in req.Blocks)
                 {
                     var block = new Block
@@ -132,7 +139,8 @@ namespace DashBackend.Controllers
             _dashRepository.SaveChanges();
 
             var blocks = _blockRepository.GetBlocks(id);
-            if (blocks.Any()) {
+            if (blocks.Any())
+            {
                 foreach (var block in blocks)
                 {
                     _blockRepository.Delete(block);
@@ -153,6 +161,15 @@ namespace DashBackend.Controllers
             public string? Name { get; set; }
 
             public IEnumerable<BlockUpdateRequest>? Blocks { get; set; }
+
+            public UpdateDashSettingsRequest? Settings { get; set; }
+        }
+
+        public class UpdateDashSettingsRequest
+        {
+            public int? Columns { get; set; }
+            public int? RowHeight { get; set; }
+            public bool? DisplayGrid { get; set; }
         }
 
         public class BlockUpdateRequest

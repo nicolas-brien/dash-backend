@@ -35,6 +35,9 @@ namespace DashBackend.Data
                 eb.HasKey(d => d.Id);
                 eb.Property(d => d.Name).IsRequired().HasMaxLength(200);
                 eb.Property(d => d.UserId).IsRequired();
+                eb.Property(d => d.Columns).IsRequired();
+                eb.Property(d => d.RowHeight).IsRequired();
+                eb.Property(d => d.DisplayGrid).IsRequired();
             });
 
             modelBuilder.Entity<Block>(eb =>

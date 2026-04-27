@@ -19,6 +19,15 @@ namespace DashBackend.Models
         [MaxLength(100)]
         public string Name { get; set; } = null!;
 
+        [Required]
+        public int Columns { get; set; } = 12;
+
+        [Required]
+        public int RowHeight { get; set; } = 50;
+
+        [Required]
+        public bool DisplayGrid { get; set; } = false;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
